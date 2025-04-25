@@ -1,13 +1,5 @@
-
-/backend/myenv
-/scripts/myenv
-config/.env
-config/Neo4j-96d442cf-Created-2024-12-30.txt
+scripts
 backend/.env
-.vscode/launch.json
+.vscode
 .cache
 .DS_Store
-scripts/playlists.txt
-scripts/playlist2db.py
-scripts/BUILD_DATABASE.py
-backend/kafka/producer/.env
