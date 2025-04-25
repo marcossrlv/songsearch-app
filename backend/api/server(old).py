@@ -5,7 +5,8 @@ from neo4j import GraphDatabase
 import os
 from dotenv import load_dotenv
 
-load_dotenv(dotenv_path="/app/config/.env")
+# en docker : dotenv_path="/app/config/.env"
+load_dotenv(dotenv_path="../config/.env")
 URI = os.getenv("NEO4J_URI")
 AUTH = (os.getenv("NEO4J_USER"), os.getenv("NEO4J_PASSWORD"))
 driver = GraphDatabase.driver(URI, auth=AUTH)
@@ -118,4 +119,4 @@ def get_track_lyrics(track_id):
     return track['lyrics']
 
 if __name__ == "__main__": 
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=5001)

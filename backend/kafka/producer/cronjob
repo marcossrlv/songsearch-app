@@ -1,0 +1,1 @@
+* * * * * /app/run_producer.sh >> /var/log/cronpipe 2>&1

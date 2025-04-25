@@ -1,0 +1,4 @@
+kafka-python==2.0.2
+neo4j==5.27.0
+openai==1.57.4
+python-dotenv==1.0.1
