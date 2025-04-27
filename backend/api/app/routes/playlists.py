@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
-from models.playlist import Playlist
-from models import db
+from ..models.playlist import Playlist
+from ..models import db
 
 bp_playlists = Blueprint('playlists', __name__)
 
@@ -29,3 +29,15 @@ def delete_playlist(playlist_id):
     db.session.delete(playlist)
     db.session.commit()
     return jsonify({"message": "Playlist deleted"})
+
+@bp_playlists.route('/playlists/<string:playlist_id>/update_last_accessed', methods=['PATCH'])
+def update_last_accessed(playlist_id):
+    updated_playlist = Playlist.update_last_accessed(playlist_id)
+    if updated_playlist:
+        return jsonify({
+            "id": updated_playlist.id,
+            "name": updated_playlist.name,
+            "last_accessed": updated_playlist.last_accessed.isoformat()  # ISO format for timestamp
+        }), 200
+    else:
+        return jsonify({"error": "Playlist not found"}), 404

@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
-from services.embedding import generate_embedding
-from services.neo4j_service import query_similar_tracks, get_track_from_db, get_chunk_from_db
-from services.utils import group_chunks_by_track
+from ..services.embedding import generate_embedding
+from ..services.neo4j_service import query_similar_tracks, get_track_from_db, get_chunk_from_db
+from ..services.utils import group_chunks_by_track
 
 bp_recommend = Blueprint('recommend', __name__)
 

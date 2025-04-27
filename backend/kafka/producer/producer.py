@@ -9,19 +9,20 @@ from lrclib import LrcLibAPI
 from llama_index.core.node_parser import TokenTextSplitter
 from requests import RequestException
 import psycopg2
+import requests
+from dotenv import load_dotenv
 
-# Configuración
+load_dotenv()
+
 KAFKA_TOPIC = "songs"
 KAFKA_BROKER = "kafka:9092"
-SPOTIPY_CLIENT_ID = os.getenv("SPOTIPY_CLIENT_ID")
-SPOTIPY_CLIENT_SECRET = os.getenv("SPOTIPY_CLIENT_SECRET")
+SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
+SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
 
 api = LrcLibAPI(user_agent="songsearch/0.0.1")
 
-# Conectar a Spotify
-sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials(client_id=SPOTIPY_CLIENT_ID, client_secret=SPOTIPY_CLIENT_SECRET))
+sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials(client_id=SPOTIFY_CLIENT_ID, client_secret=SPOTIFY_CLIENT_SECRET))
 
-# Productor Kafka
 producer = KafkaProducer(
     bootstrap_servers=KAFKA_BROKER,
     value_serializer=lambda v: json.dumps(v).encode('utf-8')
@@ -38,12 +39,13 @@ def load_playlists_from_db():
             port="5432"
         )
         with conn.cursor() as cur:
-            cur.execute("SELECT id, name FROM playlists")
+            cur.execute("SELECT id, name, last_accessed FROM playlists")
             rows = cur.fetchall()
             for row in rows:
                 playlists.append({
-                    "id": row[0].strip(),
-                    "name": row[1].strip()
+                    "id": row[0].strip() if row[0] else None,
+                    "name": row[1].strip() if row[1] else None,
+                    "last_accessed": row[2].strip() if row[2] else None
                 })
     except Exception as e:
         print(f"⚠️ Error al cargar playlists desde la base de datos: {e}")
@@ -65,7 +67,8 @@ def get_playlist_tracks(playlist_id):
                     'artist': track['artists'][0]['name'],
                     'spotify_id': track['id'],
                     'cover': track['album']['images'][0]['url'] if track['album']['images'] else None,
-                    'url': track['external_urls']['spotify']
+                    'url': track['external_urls']['spotify'],
+                    'added_at': item['added_at']  # added date-time
                 })
             results = sp.next(results) if results['next'] else None
     except spotipy.exceptions.SpotifyException as e:
@@ -91,6 +94,16 @@ def split_lyrics(lyrics, chunk_size, overlap):
     chunks = text_splitter.split_text(lyrics)
     return [{"chunk_id": str(uuid.uuid4()), "lyrics": chunk} for chunk in chunks]
 
+def update_last_accessed(playlist_id):
+    
+    API_URL = "http://api:5000"
+    response = requests.patch(f"{API_URL}/playlists/{playlist_id}/update_last_accessed")
+    
+    if response.status_code == 200:
+        print("Playlist updated:", response.json())
+    else:
+        print("Error updating playlist:", response.json())
+
 def main():
     print("✅ Producer iniciado")
     #playlists = []
@@ -99,10 +112,12 @@ def main():
     for playlist in playlists:
         playlist_id = playlist['id']
         playlist_name = playlist['name']
+        playlist_last_access = playlist['last_accessed']
         
         print(f"Obteniendo canciones de la playlist: {playlist_name} ({playlist_id})...")
         playlist_tracks = get_playlist_tracks(playlist_id)
-        
+        update_last_accessed(playlist_id)
+                
         print("Enviando canciones al bus Kafka...")
         for track in tqdm(playlist_tracks, desc="Procesando canciones", unit="track"):
             
@@ -112,7 +127,8 @@ def main():
             track_data = {
                 "track": track,
                 "lyrics": lyrics,
-                "chunks": chunks
+                "chunks": chunks,
+                "playlist_last_access": playlist_last_access # Dk if this makes sense here
             }
             
             producer.send(KAFKA_TOPIC, value=track_data)

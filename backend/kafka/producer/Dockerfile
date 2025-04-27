@@ -8,13 +8,16 @@ RUN apt-get update && \
 WORKDIR /app
 
 # Copy the application code
-COPY . /app
+COPY kafka/producer/ .
+
+# Copy .env file
+COPY .env .env
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy cron job configuration to the container
-COPY cronjob /etc/cron.d/producer-cron
+COPY kafka/producer/cronjob /etc/cron.d/producer-cron
 RUN chmod 0644 /etc/cron.d/producer-cron && crontab /etc/cron.d/producer-cron
 
 # Make sure the script is executable
@@ -24,7 +27,7 @@ RUN chmod +x /app/run_producer.sh
 RUN mkfifo /var/log/cronpipe
 
 # The entrypoint script will manage both cron and the output redirection
-COPY entrypoint.sh /entrypoint.sh
+COPY kafka/producer/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 # Start the entrypoint script

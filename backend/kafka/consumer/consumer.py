@@ -19,7 +19,7 @@ API_KEY = os.getenv("OPENAI_API_KEY")
 driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
 
 def create_vector_index():
-    query = '''CREATE VECTOR INDEX trackLyrics
+    query = '''CREATE VECTOR INDEX trackLyrics IF NOT EXISTS
         FOR (c:Chunk)
         ON c.embedding
         OPTIONS {indexConfig: {
@@ -103,6 +103,14 @@ def process_track(track, chunks):
                 return f"Error al generar el embedding para el chunk {chunk}: {e}"
     except Exception as e:
         return f"Error al procesar la canción {track['title']}: {e}"
+    
+def is_newly_added_track(track, playlist_last_access):
+    track_added_date = track['added_at']
+    
+    if playlist_last_access is None:
+        return True
+    
+    return track_added_date > playlist_last_access        
 
 def consumer():
     consumer = KafkaConsumer(
@@ -120,12 +128,18 @@ def consumer():
         track = data.get("track")
         lyrics = data.get("lyrics")
         chunks = data.get("chunks")
+        playlist_last_access = data.get("playlist_last_access")
 
         if track and lyrics is not None and chunks is not None:
             print(f"🎵 Procesando canción: {track['title']} de {track['artist']}")
             
+            # Check if it's a recently added song
+            if not is_newly_added_track(track, playlist_last_access):
+                print(f"⚠️ The song '{track['title']}' was already added. Skipping...")
+                continue
+            
             if track_exists(track['spotify_id']):
-                print(f"⚠️ Canción '{track['title']}' ya existe. Saltando...")
+                print(f"⚠️ The song '{track['title']}' is already in DB. Skipping...")
                 continue
             
             save_track_to_database(track, lyrics, chunks)

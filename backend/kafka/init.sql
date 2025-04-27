@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS playlists (
   id TEXT PRIMARY KEY,
-  name TEXT NOT NULL
+  name TEXT NOT NULL,
+  last_accessed TIMESTAMPTZ
 );
 
 INSERT INTO playlists (id, name) VALUES 

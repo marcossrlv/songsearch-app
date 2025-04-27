@@ -68,7 +68,9 @@ services:
     command: ["python", "consumer.py"]
 
   producer-cron:
-    build: ./kafka/producer
+    build:
+      context: .
+      dockerfile: ./kafka/producer/Dockerfile
     container_name: kafka-prod-cron
     depends_on:
       db:
