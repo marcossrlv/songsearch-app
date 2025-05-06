@@ -133,7 +133,7 @@ def consumer():
         if track and lyrics is not None and chunks is not None:
             print(f"🎵 Procesando canción: {track['title']} de {track['artist']}")
             
-            # Check if it's a recently added song
+            # Check if it's a recently added song (not here)
             if not is_newly_added_track(track, playlist_last_access):
                 print(f"⚠️ The song '{track['title']}' was already added. Skipping...")
                 continue

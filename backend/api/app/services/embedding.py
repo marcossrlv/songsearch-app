@@ -5,7 +5,7 @@ api_key = Config.OPENAI_API_KEY
 
 def generate_embedding(chunk):
     try:
-        with OpenAI(api_key) as client:
+        with OpenAI(api_key=api_key) as client:
             response = client.embeddings.create(
                 input=chunk,
                 model="text-embedding-3-small"

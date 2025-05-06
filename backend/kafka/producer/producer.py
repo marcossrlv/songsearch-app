@@ -25,7 +25,7 @@ sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials(client_id=SPOTIFY_CLI
 
 producer = KafkaProducer(
     bootstrap_servers=KAFKA_BROKER,
-    value_serializer=lambda v: json.dumps(v).encode('utf-8')
+    value_serializer=lambda v: json.dumps(v, default=str).encode('utf-8')
 )
 
 def load_playlists_from_db():
@@ -45,7 +45,7 @@ def load_playlists_from_db():
                 playlists.append({
                     "id": row[0].strip() if row[0] else None,
                     "name": row[1].strip() if row[1] else None,
-                    "last_accessed": row[2].strip() if row[2] else None
+                    "last_accessed": row[2] if row[2] else None
                 })
     except Exception as e:
         print(f"⚠️ Error al cargar playlists desde la base de datos: {e}")
@@ -120,6 +120,9 @@ def main():
                 
         print("Enviando canciones al bus Kafka...")
         for track in tqdm(playlist_tracks, desc="Procesando canciones", unit="track"):
+            
+            # check if is new track
+            # cron job cada 10 min
             
             lyrics = get_lyrics(track)
             chunks = split_lyrics(lyrics, 300, 50)

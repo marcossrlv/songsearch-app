@@ -20,14 +20,18 @@ const Search = () => {
     const fetchTracks = async () => {
         if (results.length > 0) {
             try {
-                const trackPromises = results.map(track =>
-                  api.get(`/tracks/${track.track_id}`)
-                );
-                const trackResponses = await Promise.all(trackPromises);
-                const trackData = trackResponses.map(response => response.data);
-                setTracks(trackData);
+
+              const trackPromises = results.map(track =>
+                api.get(`/tracks/${track.track_id}`)
+              );
+
+              const trackResponses = await Promise.all(trackPromises);
+              const trackData = trackResponses.map(response => response.data);
+              setTracks(trackData);
+
             } catch (error) {
-                console.error("Error fetching tracks:", error);
+
+              console.error("Error fetching tracks:", error);
             }
         }
     };
@@ -38,6 +42,7 @@ const Search = () => {
           try {
               // Recorremos los resultados y agrupamos los chunks por track_id
               const trackPromises = results.map(async (track) => {
+
                   // Obtenemos las promesas para cada chunk de este track
                   const chunkPromises = track.chunks.map(chunk =>
                       api.get(`/chunks/${chunk.chunk_id}`)
@@ -92,6 +97,7 @@ const Search = () => {
     setTrackData(track);       
     const trackChunks = chunks.find(chunk => chunk.track_id === trackId);
     if (trackChunks) {
+        console.log(trackChunks);
         setChunkData(trackChunks.chunks);  
     } else {
         console.log('No se encontraron chunks para este track');

@@ -13,7 +13,16 @@ def query_similar_tracks(embedding):
     RETURN t.track_id AS track_id, node.chunk_id AS chunk_id, score
     '''
     results, _, _ = driver.execute_query(query, query_embedding=embedding)
-    return results
+    related_tracks = []
+    
+    for record in results:
+        related_tracks.append({
+            "track_id": record['track_id'],
+            "chunk_id": record['chunk_id'],
+            "score": record['score']
+        })
+    return related_tracks
+    
 
 def get_track_from_db(track_id):
     query = 'MATCH (t:Track {track_id: $track_id}) RETURN t'
