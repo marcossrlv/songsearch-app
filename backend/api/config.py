@@ -9,4 +9,8 @@ class Config:
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "postgresql://user:password@db:5432/playlistdb")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
+    SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
+    SPOTIFY_REDIRECT_URI = os.getenv("SPOTIFY_REDIRECT_URI", "http://localhost:5001/auth/callback")
+    JWT_SECRET = os.getenv("JWT_SECRET", "devsecret")
 
