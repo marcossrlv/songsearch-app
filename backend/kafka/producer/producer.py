@@ -104,9 +104,16 @@ def update_last_accessed(playlist_id):
     else:
         print("Error updating playlist:", response.json())
 
+def is_new_track(track, playlist_last_access):
+    track_added_date = track['added_at']
+    
+    if playlist_last_access is None:
+        return True
+    
+    return track_added_date > playlist_last_access 
+
 def main():
     print("✅ Producer iniciado")
-    #playlists = []
     playlists = load_playlists_from_db()
     
     for playlist in playlists:
@@ -121,8 +128,9 @@ def main():
         print("Enviando canciones al bus Kafka...")
         for track in tqdm(playlist_tracks, desc="Procesando canciones", unit="track"):
             
-            # check if is new track
-            # cron job cada 10 min
+            """ if not is_new_track(track, playlist_last_access):
+                print(f"⚠️ The track '{track['title']}' is not new. Skipping...")
+                continue """
             
             lyrics = get_lyrics(track)
             chunks = split_lyrics(lyrics, 300, 50)
@@ -131,7 +139,6 @@ def main():
                 "track": track,
                 "lyrics": lyrics,
                 "chunks": chunks,
-                "playlist_last_access": playlist_last_access # Dk if this makes sense here
             }
             
             producer.send(KAFKA_TOPIC, value=track_data)

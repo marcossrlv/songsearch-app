@@ -128,15 +128,9 @@ def consumer():
         track = data.get("track")
         lyrics = data.get("lyrics")
         chunks = data.get("chunks")
-        playlist_last_access = data.get("playlist_last_access")
 
         if track and lyrics is not None and chunks is not None:
             print(f"🎵 Procesando canción: {track['title']} de {track['artist']}")
-            
-            # Check if it's a recently added song (not here)
-            if not is_newly_added_track(track, playlist_last_access):
-                print(f"⚠️ The song '{track['title']}' was already added. Skipping...")
-                continue
             
             if track_exists(track['spotify_id']):
                 print(f"⚠️ The song '{track['title']}' is already in DB. Skipping...")
