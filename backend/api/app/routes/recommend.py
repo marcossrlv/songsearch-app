@@ -10,6 +10,12 @@ def recommend():
     data = request.get_json()
     embedding = generate_embedding(data.get('text'))
     raw_chunks = query_similar_tracks(embedding)
+    
+    if not raw_chunks:
+        return jsonify({
+            "message": "No songs found. Please add some first"
+        }), 404
+    
     grouped = group_chunks_by_track(raw_chunks, 5)
     return jsonify(grouped)
 
