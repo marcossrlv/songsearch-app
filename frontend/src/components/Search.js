@@ -111,7 +111,6 @@ const Search = () => {
 
   return (
     <div className='min-h-screen'>
-      <Navbar></Navbar>
       <LyricsCard track={trackData} chunks={chunkData} openDialog={dialogState} closeDialog={closeDialog}></LyricsCard>
       <div className="flex flex-1 p-4 m-4 justify-center items-center">
         <article className="prose text-center">
@@ -145,7 +144,7 @@ const Search = () => {
                 src={track.cover}
                 alt={track.title} />
             </figure>
-            <div className="card-body text-beige">
+            <div className="card-body text-beige items-center">
               <h2 className="card-title">{track.title} - {track.artist}</h2>
               <h3>Score: {(results[index].score * 100).toFixed(2)}%</h3>
             </div>
